@@ -3,6 +3,8 @@ Adapted from http://zdez.org/qrenc3.html
 This code is released under the AGPLv3.
 */
 
+var QR = function() {
+
 // alignment pattern
 adelta = [
   0, 11, 15, 19, 23, 27, 31, // force 1 pat
@@ -705,40 +707,34 @@ function genframe(instring)
     return qrframe;
 }
 
-var wd, ht, qrc;
-function setupqr(){
-    wd = window.innerWidth;
-    ht = window.innerHeight - 200;
-    mp = document.getElementById("mapcanv");
-
-    qrd = document.getElementById("qrdiv");
-    qrd.style.width = wd + "px";
-    qrd.style.height = ht + "px";
-
-    var elem = document.getElementById('qrcanv');
-    qrc = elem.getContext('2d');
-    qrc.canvas.width = wd;
-    qrc.canvas.height = ht;
-    qrc.fillStyle = '#fff';
-    qrc.fillRect(0,0,wd,ht);
+var qrDrawElem, qrDraw, qrShow;
+this.setup = function (size){
+    qrDrawElem = document.createElement("canvas");
+    qrDraw = qrDrawElem.getContext('2d');
+    qrShow = document.getElementById('qr-show').getContext('2d');
+    qrShow.canvas.width = size;    // should also clear the canvas
+    qrShow.canvas.height = size;
+    qrShow.imageSmoothingEnabled = false;
 }
 
-function doqr(text) {
+this.draw = function(text) {
   ecclevel = 1;
   qf = genframe(text);
-  qrc.lineWidth=1;
-
-  var i, j;
-  px = (ht > wd) ? wd : ht;
-  ox = (wd - px) / 2;
-  px /= width + 8;  // width = number of blocks, wd = canvas pixel width
-  px = Math.round(px - 0.5);
-  qrc.clearRect(0,0,wd,ht);
-  qrc.fillStyle = '#fff';
-  qrc.fillRect(ox, 0, px * (width + 8), px * (width + 8));
-  qrc.fillStyle = '#000';
+  qrDraw.canvas.width = width;
+  qrDraw.canvas.height = width;
+  qrDraw.fillStyle = '#fff';
+  qrDraw.fillRect(0, 0, width, width);
+  qrDraw.fillStyle = '#000';
+  var i, j, p = 0;
   for (i = 0; i < width; i++)
-    for(j = 0; j < width; j++)
-      if (qf[j * width + i])
-        qrc.fillRect(ox + px * (4 + i), px * (4 + j), px, px)
+    for(j = 0; j < width; j++, p++)
+      if (qf[p]) qrDraw.fillRect(i, j, 1, 1);
 }
+
+this.show = function() {
+  var s = qrShow.canvas.height;
+  qrShow.drawImage(qrDrawElem, 0, 0, s, s);
+}
+
+return this;
+}(); // var QR = function()
