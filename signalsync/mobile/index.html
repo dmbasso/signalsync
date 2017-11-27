@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html manifest="cache.appcache">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Sync Claquet</title>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-touch-fullscreen" content="yes">
+<link rel='apple-touch-icon' type='image/svg' href='icon.svg'>
+<link rel="apple-touch-icon-precomposed" type='image/svg' href='icon.svg'>
+<link rel='icon' type='image/png' href='favicon.png'>
+<style type="text/css">
+  html, body {
+    width:100%; margin: 0px; padding: 0px; overflow: hidden;
+    background: #000; text-align: center; color: orange;
+    font-family: sans-serif; font-size: 125%; font-weight: bold;
+  }
+  #textTime {
+    padding: 20px; padding-bottom: 0px;
+  }
+  #userInput {
+    width: 100%; padding-bottom: 20px; border: 0px;
+    background: #000; text-align: center; color: orange;
+    font-family: sans-serif; font-size: 125%; font-weight: bold;
+  }
+  #qrdiv {
+    width:300px; height:300px; background: #fff;
+  }
+</style>
+<base href="/">
+<script src="qr.js"></script>
+<script src="dtmf.js"></script>
+<script src="app.js"></script>
+</head>
+<body onload="setupApp()">
+
+<div id="textTime"></div>
+<textarea rows=4 id="userInput"></textarea>
+<div id="qrdiv">
+<canvas id="qrcanv" onclick="selectDTMFOutput()">
+  No Canvas Support?
+</canvas>
+</div>
+
+</body></html>

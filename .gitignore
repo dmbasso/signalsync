@@ -1,0 +1,17 @@
+*.pyc
+*.aux
+*.log
+*.pdf
+*.pot
+*.mo
+MANIFEST
+resources
+build
+dist
+docs/_*
+signalsync.egg-info
+.coverage
+htmlcov
+.cache
+__pycache__
+.sass-cache

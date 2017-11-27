@@ -1,0 +1,4 @@
+include README
+include LICENSE
+include README.md
+recursive-include signalsync/mobile *
