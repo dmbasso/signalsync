@@ -24,15 +24,19 @@
     width: 100%; padding: 0px; border: 0px; text-align: center;
     font-family: sans-serif; font-size: 125%; font-weight: bold;
   }
+  .error {
+    color: red;
+  }
 </style>
 <base href="/">
 <script src="qr.js"></script>
 <script src="dtmf.js"></script>
+<script src="pinger.js"></script>
 <script src="app.js"></script>
 </head>
 <body onload="setupApp()">
 
-<canvas id="qr-show" onclick="selectDTMFOutput()">
+<canvas id="qr-show" onclick="canvasTouched()">
   No Canvas Support?
 </canvas>
 <div id="text">

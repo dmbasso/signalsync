@@ -5,7 +5,8 @@ var timeOffset = 0;
 var lastTime;
 var textTime;
 var setupFrameTime = 50; // ms
-
+var offsetRecordMode;
+var pinger;
 
 function playCode(time) {
   if (dtmfType == 2) {
@@ -18,6 +19,8 @@ function playCode(time) {
 }
 
 function updateInfo() {
+  if (offsetRecordMode)
+    return;
   var d = new Date();
   var cur = Math.floor( // epoch at the time of display
     (d.getTime() + timeOffset + 50 + setupFrameTime) / 1000
@@ -40,16 +43,15 @@ function updateInfo() {
   QR.draw(code);
 }
 
-
 function showFrame() {
-  QR.show();
-  // console.log("frame shown: " + (new Date().getTime()));
+  if (!offsetRecordMode)
+    window.requestAnimationFrame(QR.show);
 }
 
 function setupApp() {
   var screenHeight = window.innerHeight;
   var textHeight = document.getElementById('text').clientHeight;
-  var w = window.innerWidth;
+  var w = window.innerWidth - 40;
   var h = screenHeight - textHeight - 20;
   QR.setup(h < w ? h : w);
   textTime = document.getElementById('textTime');
@@ -66,10 +68,36 @@ function setupApp() {
   }, delay - 1 - setupFrameTime);
   setTimeout(function() {
     setInterval(showFrame, 1000);
-  }, delay - 1);
+  }, delay - 1 - 16);
+  offsetRecordMode = navigator.onLine;
+  canvasTouched();
 }
 
-function selectDTMFOutput() {
+function pingerDone(status, msg) {
+  console.log(status);
+  console.log(msg);
+  if (status == "ok") {
+    offsetRecordMode = false;
+    textTime.innerHTML = "Offset accepted!<br>Starting claquet...";
+  } else {
+    textTime.className = "error";
+    textTime.innerHTML = msg + "<br>Touch to try again.";
+  }
+  pinger = null;
+}
+
+function canvasTouched() {
+  if (offsetRecordMode) {
+    if (!pinger) {
+      textTime.className = "";
+      pinger = new Pinger(textTime, document.getElementById('qr-show'));
+      pinger.done = pingerDone;
+      pinger.connect();
+    } else {
+      pinger.setOffset();
+    }
+    return;
+  }
   // dtmfType = (dtmfType + 1) % 3;
   dtmfType = (dtmfType + 1) % 2;
   console.log("dtmf output type: " + dtmfType)
