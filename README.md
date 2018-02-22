@@ -3,6 +3,11 @@
 Module to synchronize independent signal recordings with time markings, made
 with special _claquets_ (clapperboards).
 
+## requirements
+
+* python-opencv
+* python-zbar
+
 ## Acknowledgments
 
 This module was developed with financial support from the Foundation for Science

@@ -1,96 +1,54 @@
-var dtmf = new DTMFGen();
+/* global QRTimeCode, DTMFGen, Pinger */
+/* eslint-disable no-unused-vars */
+
+var qrShow;
+var dtmf;
 var dtmfType = 0;
-var referenceTime = 0;
-var timeOffset = 0;
-var lastTime;
 var textTime;
-var setupFrameTime = 50; // ms
 var offsetRecordMode;
 var pinger;
+var qrtc;
+var setupTries = 2;
 
-function playCode(time) {
-  if (dtmfType == 2) {
-    time %= 10000;
-  } else {
-    if (time % 3 != 0)
-      return;
-  }
-  dtmf.playCode(time, setupFrameTime / 1000);
-}
-
-function updateInfo() {
-  if (offsetRecordMode)
-    return;
-  var d = new Date();
-  var cur = Math.floor( // epoch at the time of display
-    (d.getTime() + timeOffset + 50 + setupFrameTime) / 1000
-  );
-  if (cur == lastTime) {
-    return;
-  }
-  if (dtmfType) {
-    playCode(cur);
-  }
-  var csum = 0,
-    t = cur;
-  while (t) {
-    csum += t % 10;
-    t = Math.floor(t / 10);
-  }
-  var code = "" + cur + "#" + Number(csum).toString(16);
-  textTime.innerHTML = new Date(cur * 1000).toISOString() + "<br/>" + code;
-  lastTime = cur;
-  QR.draw(code);
-}
-
-function showFrame() {
-  if (!offsetRecordMode)
-    window.requestAnimationFrame(QR.show);
-}
-
-function setupApp() {
-  var screenHeight = window.innerHeight;
-  var textHeight = document.getElementById('text').clientHeight;
-  var w = window.innerWidth - 40;
-  var h = screenHeight - textHeight - 20;
-  QR.setup(h < w ? h : w);
+function setupApp () {
+  dtmf = new DTMFGen();
   textTime = document.getElementById('textTime');
-  if (window.location.hash[0] == "#") {
-    referenceTime = Math.floor(window.location.hash.substr(1));
-    console.log("Reference time: " + referenceTime);
-    console.log("Current time  : " + (new Date().getTime()));
-    timeOffset = new Date().getTime() - referenceTime;
-    console.log("Time offset   : " + timeOffset);
-  }
-  var delay = 1000 - (new Date().getTime() + timeOffset) % 1000;
-  setTimeout(function() {
-    setInterval(updateInfo, 1000);
-  }, delay - 1 - setupFrameTime);
-  setTimeout(function() {
-    setInterval(showFrame, 1000);
-  }, delay - 1 - 16);
+  qrShow = document.getElementById('qr-show');
+  let canvas = qrShow.getContext('2d').canvas;
+  let w = document.getElementById('canvas-container').clientWidth;
+  canvas.width = w;
+  canvas.height = w;
+  canvas.imageSmoothingEnabled = false;
   offsetRecordMode = navigator.onLine;
   canvasTouched();
 }
 
-function pingerDone(status, msg) {
+function pingerDone (status, msg) {
   console.log(status);
   console.log(msg);
-  if (status == "ok") {
+  if (status === 'ok') {
     offsetRecordMode = false;
-    textTime.innerHTML = "Offset accepted!<br>Starting claquet...";
+    textTime.innerHTML = 'Offset accepted!<br>Starting claquet...';
+    document.getElementById('userInput').value = msg;
+    qrtc = new QRTimeCode();
   } else {
-    textTime.className = "error";
-    textTime.innerHTML = msg + "<br>Touch to try again.";
+    if (setupTries) {
+      textTime.className = 'error';
+      textTime.innerHTML = msg + '<br>Touch to try again. Ignore in ' + setupTries + ' tries.';
+    } else {
+      offsetRecordMode = false;
+      qrtc = new QRTimeCode();
+    }
+    setupTries--;
   }
   pinger = null;
 }
 
-function canvasTouched() {
+function canvasTouched () {
   if (offsetRecordMode) {
     if (!pinger) {
-      textTime.className = "";
-      pinger = new Pinger(textTime, document.getElementById('qr-show'));
+      textTime.className = '';
+      pinger = new Pinger(textTime, qrShow);
       pinger.done = pingerDone;
       pinger.connect();
     } else {
@@ -98,11 +56,64 @@ function canvasTouched() {
     }
     return;
   }
-  // dtmfType = (dtmfType + 1) % 3;
-  dtmfType = (dtmfType + 1) % 2;
-  console.log("dtmf output type: " + dtmfType)
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('mainView').style.display = 'none';
 }
 
-function scrollToTop() {
+var camRegexp = /\b(cam\w*)\s*=\s*(\S+)/;
+
+function userInputChanged (el) {
+  console.log('uic: ' + el.value);
+  var m = camRegexp.exec(el.value);
+  if (m && qrtc) {
+    if (qrtc.payload) {
+      if (camRegexp.exec(qrtc.payload)) {
+        qrtc.payload = qrtc.payload.replace(camRegexp, '$1=' + m[2]);
+      } else {
+        qrtc.payload += ' cam=' + m[2];
+      }
+    } else {
+      qrtc.payload = 'cam=' + m[2];
+    }
+  }
   window.scrollTo(0, 0);
 }
+
+function setCamera (num) {
+  var el = document.getElementById('userInput');
+  var m = camRegexp.exec(el.value);
+  if (!m) {
+    el.value += 'camera=' + num;
+  } else {
+    el.value = el.value.replace(camRegexp, m[1] + '=' + num);
+  }
+  userInputChanged(el);
+  hideMenu();
+}
+
+function setDTMF (type) {
+  if (type === 3) {
+    dtmf.scheduleCountdown();
+  } else if (type) {
+    dtmf.startTones(0 + type);
+  } else {
+    dtmf.stopTones();
+  }
+  hideMenu();
+}
+
+function hideMenu () {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('mainView').style.display = 'grid';
+}
+
+function setDataPayload () {
+  if (!qrtc) return;
+  var resp = window.prompt('Payload', qrtc.payload || '');
+  if (resp) {
+    qrtc.payload = resp;
+    hideMenu();
+  }
+}
+
+setupApp();

@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='signalsync',
-    version='0.1.0',
+    version='0.1.4',
     description=(
         'Synchronization of independent signal recordings with time markings'
     ),
@@ -15,5 +15,6 @@ setup(
     license='AGPLv3',
     packages=['signalsync'],
     scripts=['bin/qr-claquet'],
+    include_package_data=True,
     install_requires=['dtmf'],
 )

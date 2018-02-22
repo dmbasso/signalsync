@@ -1,46 +1,162 @@
 <!DOCTYPE html>
-<html manifest="cache.appcache">
+<html>
+<!-- <html manifest="Xcache.appcache"> -->
 <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Sync Claquet</title>
 
-<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-touch-fullscreen" content="yes">
 <link rel='apple-touch-icon' type='image/svg' href='icon.svg'>
 <link rel="apple-touch-icon-precomposed" type='image/svg' href='icon.svg'>
-<link rel='icon' type='image/png' href='favicon.png'>
+<link rel='icon' type='image/x-icon' href='favicon.ico'>
 <style type="text/css">
   html, body {
-    width:100%; margin: 0px; padding: 0px; overflow: hidden; text-align: center;
+    width:100%; margin: 0px; padding: 0px; text-align: center;
     font-family: sans-serif; font-size: 125%; font-weight: bold;
+    font-family: monospace;
   }
-  #qr-show {
-    padding-top: 20px;
+  #qr-draw {
+    display: none;
+  }
+  #mainView {
+    position: absolute;
+    width: 96vw;
+    height: 92vh;
+    padding: 2vw;
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+    display: grid;
+    /*display: none;*/
+    /*landscape*/
+    grid-template-columns: 92vh auto;
+    grid-template-rows: auto auto;
+    grid-column-gap: 2%;
+    grid-template-areas:
+      "canvas time"
+      "canvas user";
+  }
+  #camMenu, #soundMenu {
+    width: 50%;
+  }
+  @media screen and (orientation: portrait) {
+    #mainView {
+      width: 92vw;
+      height: 94vh;
+      padding: 4vw;
+      padding-top: 3vh;
+      padding-bottom: 3vh;
+
+      grid-template-columns: 92vw;
+      grid-template-rows: 92vw auto auto;
+      grid-template-areas:
+      "canvas"
+      "time"
+      "user";
+    }
+    #camMenu, #soundMenu {
+      width: 100%;
+    }
+  }
+  #canvas-container {
+    grid-area: canvas;
+    align-self: center;
   }
   #textTime {
-    padding: 20px; padding-bottom: 0px;
+    grid-area: time;
+    align-self: center;
   }
   #userInput {
+    grid-area: user;
     width: 100%; padding: 0px; border: 0px; text-align: center;
     font-family: sans-serif; font-size: 125%; font-weight: bold;
+  }
+  #menu {
+    display: none;
+    /*display: flex;*/
+    flex-wrap: wrap;
+    margin: 25px;
+  }
+  h1 {
+    font-size: 110%;
+  }
+  .buttonContainer {
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  input[type="button"] {
+    display: block;
+    width: 100%;
+    margin: 3px;
+    border-collapse: collapse;
+    background: #545;
+    color: white;
+    outline: 0;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+    border: 0px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 80%;
+    font-weight: bold;
+    font-family: monospace;
+    text-align: center;
+  }
+  input[type="button"]:active {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 3px 10px 0 rgba(0, 0, 0, 0.2);
+  }
+  .buttonContainer > input[type="button"] {
+    display: inline-flex;
+    width: 45%;
   }
   .error {
     color: red;
   }
 </style>
-<base href="/">
-<script src="qr.js"></script>
+<script src="libqrcode.js"></script>
 <script src="dtmf.js"></script>
+<script src="qrtimecode.js"></script>
 <script src="pinger.js"></script>
-<script src="app.js"></script>
 </head>
-<body onload="setupApp()">
+<body>
 
-<canvas id="qr-show" onclick="canvasTouched()">
-  No Canvas Support?
-</canvas>
-<div id="text">
-<div id="textTime">Sync Claquet<br><i>Starting up...</i></div>
-<textarea rows=4 id="userInput" onchange="scrollToTop()"></textarea>
+<!-- content -->
+<canvas id="qr-draw"></canvas>
+  <!-- <div id="qr-draw"></div> -->
+<div id="mainView">
+  <div id="canvas-container">
+    <canvas id="qr-show" onclick="canvasTouched()">
+      No Canvas Support?
+    </canvas>
+  </div>
+  <div id="textTime">Sync Claquet<br><i>Starting up...</i></div>
+  <textarea rows=4 id="userInput" onchange="userInputChanged(this)"></textarea>
 </div>
+<div id="menu">
+  <input type="button" value="<< Back" onclick="hideMenu()"/>
+  <input type="button" value="Set data payload" onclick="setDataPayload()"/>
+  <div id="camMenu">
+    <h1>Cameras</h1>
+    <div class="buttonContainer">
+      <input type="button" value="All cameras" onclick="setCamera(0)"/>
+      <input type="button" value="Camera 1" onclick="setCamera(1)"/>
+      <input type="button" value="Camera 2" onclick="setCamera(2)"/>
+      <input type="button" value="Camera 3" onclick="setCamera(3)"/>
+      <input type="button" value="Camera 4" onclick="setCamera(4)"/>
+      <input type="button" value="Camera 5" onclick="setCamera(5)"/>
+    </div>
+  </div>
+  <div id="soundMenu">
+    <h1>Sound Sync</h1>
+    <div class="buttonContainer">
+      <input type="button" value="Off" onclick="setDTMF(0)"/>
+      <input type="button" value="Absolute" onclick="setDTMF(1)"/>
+      <input type="button" value="Relative" onclick="setDTMF(2)"/>
+      <input type="button" value="Countdown" onclick="setDTMF(3)"/>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+<!-- content -->
+
 </body></html>
