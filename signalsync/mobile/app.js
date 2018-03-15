@@ -20,7 +20,11 @@ function setupApp () {
   canvas.height = w;
   canvas.imageSmoothingEnabled = false;
   offsetRecordMode = navigator.onLine;
-  canvasTouched();
+  if (!offsetRecordMode) {
+    qrtc = new QRTimeCode();
+  } else {
+    canvasTouched();
+  }
 }
 
 function pingerDone (status, msg) {

@@ -1,7 +1,10 @@
 CACHE MANIFEST
-# 2017-06-23.1
+# 2018-02-23.1
 
-qr.js
-dtmf.js
 app.js
+dtmf.js
 icon.svg
+favicon.ico
+libqrcode.js
+pinger.js
+qrtimecode.js
