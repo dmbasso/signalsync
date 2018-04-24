@@ -111,6 +111,14 @@
   .error {
     color: red;
   }
+  .version {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    padding: 3px;
+    font-size: 70%;
+    color: slategray;
+  }
 </style>
 <script src="libqrcode.js"></script>
 <script src="dtmf.js"></script>
@@ -153,6 +161,9 @@
       <input type="button" value="Relative" onclick="setDTMF(2)"/>
       <input type="button" value="Countdown" onclick="setDTMF(3)"/>
     </div>
+  </div>
+  <div class="version">
+    v0.1.6
   </div>
 </div>
 <script src="app.js"></script>

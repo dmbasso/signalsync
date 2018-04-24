@@ -33,5 +33,5 @@ def load_csv(fobj):
 
 
 def save_csv(fobj, lst):
-    """Save a list of <float_timestamp:str, frame:int> pairs as a csv file"""
-    fobj.write("\n".join("%s,%d" % p for p in lst))
+    """Save a list of <timestamp:float, frame:float> pairs as a csv file"""
+    fobj.write("\n".join("%f,%d" % tuple(p) for p in lst))

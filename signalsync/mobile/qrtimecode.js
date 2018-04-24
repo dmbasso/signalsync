@@ -9,11 +9,8 @@ class QRTimeCode {
     this.mean_dt = 0;
     this.done = false;
     this.textTime = document.getElementById('textTime');
-    this.timeOrigin = performance.timeOrigin;
-    this.last_t = performance.now();
-    if (!this.timeOrigin) {
-      this.timeOrigin = new Date().getTime() - this.last_t;
-    }
+    window.addEventListener('focus', () => this.setupReferenceTime());
+    this.setupReferenceTime();
     this.setupQR();
     this.qrReady = false;
     this.updateInfo();
@@ -26,6 +23,14 @@ class QRTimeCode {
     this.size = this.qrShow.canvas.width;
     this.qrDrawElem = document.getElementById('qr-draw');
     this.drawCanvas = this.qrDrawElem.getContext('2d');
+  }
+
+  setupReferenceTime () {
+    this.timeOrigin = performance.timeOrigin;
+    this.last_t = performance.now();
+    if (!this.timeOrigin) {
+      this.timeOrigin = new Date().getTime() - this.last_t;
+    }
   }
 
   updateInfo () {

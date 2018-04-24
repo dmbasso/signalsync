@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='signalsync',
-    version='0.1.5',
+    version='0.1.6',
     description=(
         'Synchronization of independent signal recordings with time markings'
     ),

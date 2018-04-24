@@ -33,8 +33,12 @@ function pingerDone (status, msg) {
   if (status === 'ok') {
     offsetRecordMode = false;
     textTime.innerHTML = 'Offset accepted!<br>Starting claquet...';
-    document.getElementById('userInput').value = msg;
     qrtc = new QRTimeCode();
+    if (msg.substr(0, 3) === 'pl:') {
+      msg = msg.substr(3).replace(/:/g, ' ');
+      qrtc.payload = msg;
+    }
+    document.getElementById('userInput').value = msg;
   } else {
     if (setupTries) {
       textTime.className = 'error';
